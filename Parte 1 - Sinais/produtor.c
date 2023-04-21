@@ -10,9 +10,9 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    pid_t pid = atoi(argv[1]);
-    char* signame = argv[2];
-    int sigvalue;
+    pid_t pid = atoi(argv[1]); // pid do consumidor
+    char* signame = argv[2]; // nome do sinal escolhido pelo usuário
+    int sigvalue; // valor do sinal
 
      if (strcmp(signame, "SIGHUP") == 0) {
         sigvalue = SIGHUP;
@@ -27,7 +27,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    // Checar se processo existe
+    // Checar se processo consumidor existe
     if (kill(pid, 0) == -1) {
         if (errno == ESRCH) {
             printf("Processo com PID %d não existe\n", pid);
@@ -36,7 +36,7 @@ int main(int argc, char *argv[]) {
             exit(EXIT_FAILURE);
         }
     } else {
-        // Enviar sinal
+        // Enviar sinal ao consumidor
         if (kill(pid, sigvalue) == -1) {
             perror("kill");
             exit(EXIT_FAILURE);

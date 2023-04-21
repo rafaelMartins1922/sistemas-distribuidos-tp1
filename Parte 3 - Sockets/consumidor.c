@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h> // para funções read, write e close
-#include <sys/socket.h> // para funções de socket
-#include <netinet/in.h> // para a estrutura sockaddr_in
-#include <arpa/inet.h> // para a função inet_pton
+#include <unistd.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 // Função para verificar se um número é primo
 int eh_primo(int num) {
@@ -22,7 +22,6 @@ int eh_primo(int num) {
 int main(int argc, char const *argv[]) {
     int producer_fd, new_socket; // descritores de arquivo para o socket do servidor e para um novo socket
     struct sockaddr_in address; // estrutura para o endereço do servidor
-    int opt = 1; // opção para setsockopt
     int addrlen = sizeof(address); // tamanho da estrutura de endereço
     char buffer_out[1024] = {0}; // buffer para armazenar a mensagem enviada
     char buffer_in[1024] = {0}; // buffer para armazenar a mensagem recebida
@@ -37,22 +36,16 @@ int main(int argc, char const *argv[]) {
 
     PORT = atoi(argv[1]);
 
-    // cria um socket TCP para o servidor
+    // cria um socket TCP para comunicação com o produtor
     if ((producer_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
         perror("Erro na criação do socket");
         exit(EXIT_FAILURE);
     }
 
-    // setsockopt: define opções do socket
-    if (setsockopt(producer_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt))) {
-        perror("Erro em setsockopt");
-        exit(EXIT_FAILURE);
-    }
-
-    // configura a estrutura de endereço do servidor
-    address.sin_family = AF_INET; // utiliza IPv4
-    address.sin_addr.s_addr = INADDR_ANY; // aceita conexões de qualquer endereço
-    address.sin_port = htons(PORT); // converte o número da porta para ordem de bytes de rede
+    // configura a estrutura de endereço alvo do socket
+    address.sin_family = AF_INET; // seta o sistema de endereços de rede para IPv4
+    address.sin_addr.s_addr = INADDR_ANY; // seta endereço alvo socket como o da máquina local, assim ele aceita comunicações de qualquer interface de rede
+    address.sin_port = htons(PORT); // converte o número da porta para ordem de bytes de rede (big-endian)
 
     // vincula o socket à porta e endereço especificados
     if (bind(producer_fd, (struct sockaddr *)&address, sizeof(address))<0) {
@@ -66,7 +59,7 @@ int main(int argc, char const *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-        // aceita uma nova conexão entrante
+    // aceita uma nova conexão
     if ((new_socket = accept(producer_fd, (struct sockaddr *)&address, (socklen_t*)&addrlen))<0) {
         perror("Erro ao aceitar conexão");
         exit(EXIT_FAILURE);
@@ -74,7 +67,7 @@ int main(int argc, char const *argv[]) {
 
 
     while(1) {
-        // recebe a resposta do servidor
+        // recebe número do produtor
         memset(buffer_in, 0, sizeof(buffer_in));
         if (read(new_socket, buffer_in, 1024) < 0) {
             perror("Erro ao receber número do processo produtor.");
@@ -92,12 +85,14 @@ int main(int argc, char const *argv[]) {
         }
         printf("Consumidor: Recebeu o número %d.\n", num);
 
+        //verifica se o número enviado pelo produtor é primo
         if(eh_primo(num)) {
             sprintf(buffer_out, "O número %d é primo", num); // Conversão da resposta para string de tamanho fixo
         } else {
-            sprintf(buffer_out, "O número %d não é primo", num); // Conversão da resposta para string de tamanho fixo
+            sprintf(buffer_out, "O número %d não é primo", num);
         }
 
+        //envia resposta ao produtor sobre se o número é primo ou não
         if (send(new_socket, buffer_out, strlen(buffer_out), 0) < 0) {
             perror("Erro ao enviar número ao procesos produtor");
             exit(EXIT_FAILURE);

@@ -33,9 +33,9 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
-    // configura a estrutura de endereço do socket
-    consumer_addr.sin_family = AF_INET; // utiliza IPv4
-    consumer_addr.sin_port = htons(PORT); // converte o número da porta para ordem de bytes de rede
+    // configura a estrutura de endereço alvo do socket
+    consumer_addr.sin_family = AF_INET; // seta o sistema de endereços de rede para IPv4
+    consumer_addr.sin_port = htons(PORT); // converte o número da porta para ordem de bytes de rede (big-endian)
 
     // converte o endereço IP do consumidor de string para forma binária
     if (inet_pton(AF_INET, HOST, &consumer_addr.sin_addr) <= 0) {
@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
-    // conecta o socket ao consumidor remoto
+    // conecta o socket ao consumidor
     if (connect(sock, (struct sockaddr *)&consumer_addr, sizeof(consumer_addr)) < 0) {
         printf("\nErro de conexão\n");
         return -1;
@@ -71,7 +71,8 @@ int main(int argc, char *argv[]) {
         num += delta;
 
     }
-    
+
+    //envia número 0 para finalizar comunicação com consumidor
     sprintf(buffer_out, "%d", 0);
     if (send(sock, buffer_out, strlen(buffer_out), 0) < 0) {
         perror("Erro ao envia número ao procesos consumidor");
