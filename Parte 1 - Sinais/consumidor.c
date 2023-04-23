@@ -5,19 +5,19 @@
 #include <string.h>
 
 // Handlers para cada sinal
-void handle_sighup(int sig) {
+void handle_sighup() {
     printf("Recebi o sinal SIGHUP\n");
 }
 
-void handle_sigint(int sig) {
+void handle_sigint() {
     printf("Recebi o sinal SIGINT\n");
 }
 
-void handle_sigquit(int sig) {
+void handle_sigquit() {
     printf("Recebi o sinal SIGQUIT\n");
 }
 
-void handle_sigill(int sig) {
+void handle_sigill() {
     printf("Recebi o sinal SIGILL, terminando o programa\n");
     exit(0);
 }
