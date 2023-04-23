@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h> // para função time 
 #include <unistd.h> // para funções read, write e close
 #include <sys/socket.h> // para funções de socket
 #include <netinet/in.h> // para a estrutura sockaddr_in
@@ -48,6 +49,8 @@ int main(int argc, char *argv[]) {
         printf("\nErro de conexão\n");
         return -1;
     }
+
+    srand(time(NULL)); //seta o valor da seed para a função rand() com o valor do tempo unix atual
 
     for (int i = 0; i < qntd_numeros; i++) {
         sprintf(buffer_out, "%d", num); // Conversão do número a ser enviado para string de tamanho fixo
